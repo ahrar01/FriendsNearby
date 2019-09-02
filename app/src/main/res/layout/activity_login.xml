@@ -103,7 +103,7 @@
             android:text="By using the app, you agree to the Terms and Privacy Policies"
             android:textAllCaps="false"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/md_white_1000"
+            android:textColor="@color/md_grey_800"
             android:textSize="12sp" />
     </LinearLayout>
 
