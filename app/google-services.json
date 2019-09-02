@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "836792075143",
+    "firebase_url": "https://friends-nearby-52d3f.firebaseio.com",
+    "project_id": "friends-nearby-52d3f",
+    "storage_bucket": "friends-nearby-52d3f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836792075143:android:d96b848a8a307073",
+        "android_client_info": {
+          "package_name": "com.ahraar.friendsnearby"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "836792075143-pqs6tv8jvgshnu4jmacg8dgg7vs5vjno.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ahraar.friendsnearby",
+            "certificate_hash": "7151b74f33b686cba96d953a23d6e1fdb61ab9b9"
+          }
+        },
+        {
+          "client_id": "836792075143-7ps52lqgdnak8d2kf7qdcqn2lipr97oj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFuCkANdPZ8z3E6yGZeUmR7iBe5Tr7TDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "836792075143-7ps52lqgdnak8d2kf7qdcqn2lipr97oj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
