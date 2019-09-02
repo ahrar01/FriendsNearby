@@ -15,6 +15,16 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.ahraar.friendsnearby.Activity.Login;
+import com.ahraar.friendsnearby.Activity.MainActivity;
+import com.ahraar.friendsnearby.Activity.Register;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class Splash extends AppCompatActivity {
     private static int SPLASH_TIME_OUT = 3000;
@@ -46,9 +56,45 @@ public class Splash extends AppCompatActivity {
                 // This method will be executed once the timer is over
                 // Start your app main activity
                 if (InternetResult) {
-                    Intent intent = new Intent(getApplicationContext(), Login.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
+                    FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (currUser == null) {
+                        Intent intent = new Intent(getApplicationContext(), Login.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+
+
+                        String userId = currUser.getUid();
+
+                        // Access a Cloud Firestore instance from your Activity
+                        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        CollectionReference users = db.collection("Users");
+
+                        Query query = users.whereEqualTo("id", userId);
+                        query.get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                            flag = true;
+                                        }
+                                        if (flag) {
+                                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                            startActivity(intent);
+                                        } else {
+                                            Intent intent = new Intent(getApplicationContext(), Register.class);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+
+
+                                    }
+                                });
+                    }
                 } else {
                     DialogAppear();
                 }

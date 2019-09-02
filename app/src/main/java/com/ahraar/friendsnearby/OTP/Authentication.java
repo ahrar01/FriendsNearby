@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ahraar.friendsnearby.Activity.MainActivity;
+import com.ahraar.friendsnearby.Activity.Register;
 import com.ahraar.friendsnearby.R;
 import com.chaos.view.PinView;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -96,16 +97,16 @@ public class Authentication extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         flag = false;
-        layout1 = (LinearLayout) findViewById(R.id.layout1);
-        layout2 = (LinearLayout) findViewById(R.id.layout2);
-        layout3 = (LinearLayout) findViewById(R.id.layout3);
-        sendCodeButton = (Button) findViewById(R.id.submit1);
-        verifyCodeButton = (Button) findViewById(R.id.submit2);
-        button3 = (Button) findViewById(R.id.submit3);
+        layout1 =  findViewById(R.id.layout1);
+        layout2 =  findViewById(R.id.layout2);
+        layout3 =  findViewById(R.id.layout3);
+        sendCodeButton =  findViewById(R.id.submit1);
+        verifyCodeButton = findViewById(R.id.submit2);
+        button3 =  findViewById(R.id.submit3);
         firebaseAuth = FirebaseAuth.getInstance();
-        phoneNum = (EditText) findViewById(R.id.phonenumber);
+        phoneNum =  findViewById(R.id.phonenumber);
         verifyCodeET = (PinView) findViewById(R.id.pinView);
-        phonenumberText = (TextView) findViewById(R.id.phonenumberText);
+        phonenumberText =  findViewById(R.id.phonenumberText);
         spinner = findViewById(R.id.spinnerCountries);
         spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, CountryData.countryNames));
 
@@ -231,18 +232,12 @@ public class Authentication extends AppCompatActivity {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-                        String userId = currUser.getUid();
-                      Intent intent = new Intent(Authentication.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-                      //  startActivity(intent);
-
-
+                        checkLoginStatus();
                         profile_dialog.dismiss();
 
                     }
-                }, 2500);
+                }, 2000);
             }
         });
 
@@ -257,7 +252,7 @@ public class Authentication extends AppCompatActivity {
     private void checkLoginStatus() {
 
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-        final String userId = currUser.getUid();
+        String userId = currUser.getUid();
 
         // Access a Cloud Firestore instance from your Activity
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -273,9 +268,11 @@ public class Authentication extends AppCompatActivity {
                         }
                         if (flag) {
                             //get user details
-                            getUserData(userId);
+                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            finish();
+
                         } else {
-                           // startActivity(new Intent(getApplicationContext(), RegistrationPart1.class));
+                            startActivity(new Intent(getApplicationContext(), Register.class));
                         }
 
 
@@ -285,30 +282,7 @@ public class Authentication extends AppCompatActivity {
     }
 
 
-    public void getUserData(String userId) {
-        userRef.document(userId).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
 
-
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            //Map<String, Object> note = documentSnapshot.getData();
-
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(Authentication.this, "Error!", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, e.toString());
-                    }
-                });
-    }
 
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {

@@ -19,12 +19,20 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import es.dmoral.toasty.Toasty;
 
 public class Login extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -101,7 +109,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-                            Toast.makeText(Login.this, "Authentication DONE.",
+                            Toasty.success(Login.this, "Authentication DONE.",
                                     Toast.LENGTH_SHORT).show();
 
                             checkLoginStatus();
@@ -111,7 +119,7 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(Login.this, "Authentication failed.",
+                            Toasty.error(Login.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
 
                         }
@@ -127,6 +135,30 @@ public class Login extends AppCompatActivity implements GoogleApiClient.OnConnec
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
         String userId = currUser.getUid();
 
+        // Access a Cloud Firestore instance from your Activity
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference users = db.collection("Users");
+
+        Query query = users.whereEqualTo("id", userId);
+        query.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            flag = true;
+                        }
+                        if (flag) {
+                            //get user details
+                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                            finish();
+
+                        } else {
+                            startActivity(new Intent(getApplicationContext(), Register.class));
+                        }
+
+
+                    }
+                });
 
     }
 
