@@ -147,7 +147,7 @@
                 android:layout_marginBottom="15dp"
                 android:layout_weight="2"
                 android:textAlignment="center"
-                android:text="In Miles "
+                android:text="Distance "
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 

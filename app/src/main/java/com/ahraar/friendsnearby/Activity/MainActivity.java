@@ -115,24 +115,13 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot.exists()) {
                             String name = documentSnapshot.getString("name");
+                            String contact = documentSnapshot.getString("contact");
+                            mEmail.setText(contact);
                             mName.setText(name);
 
                             String photo = documentSnapshot.getString("photo");
                             Picasso.get().load(photo).placeholder(R.drawable.user_placeholder).into(profilePic);
-                            try {
-                                String email = currUser.getEmail();
-                                String number = currUser.getPhoneNumber();
-                                if (!(email == null)){
-                                    mEmail.setText(email);
-                                }else {
-                                    mEmail.setText(number);
-                                }
 
-
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
 
                         }
                     }
