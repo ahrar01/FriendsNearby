@@ -1,5 +1,6 @@
 package com.ahraar.friendsnearby.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -11,14 +12,24 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.ahraar.friendsnearby.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -32,7 +43,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import es.dmoral.toasty.Toasty;
@@ -51,11 +64,14 @@ public class Register extends AppCompatActivity {
     private Button button_update;
     private Dialog dialog_loading;
 
+    private FirebaseFirestore db ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         dialog_loading = new Dialog(this);
+        db = FirebaseFirestore.getInstance();
         init();
 
     }
@@ -111,12 +127,66 @@ public class Register extends AppCompatActivity {
             public void onClick(View view) {
                 String name = mName.getText().toString();
                 if (Validate(name)&&validateProfile()){
-
+                    Dialog_Loading();
+                    saveData(name);
                 }
             }
         });
 
     }
+
+    public void saveData(final String name) {
+        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String userId = currUser.getUid();
+        //storing image in storage
+        StorageReference strefPresc = FirebaseStorage.getInstance().getReference().child("profile");
+        strefPresc.child(userId + ".jpg").putBytes(thumb_byte).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
+                while (!urlTask.isSuccessful()) ;
+                Uri downloadUrl = urlTask.getResult();
+                final String photoDownload_url = String.valueOf(downloadUrl);
+                Map<String, Object> userDetails = new HashMap<>();
+                userDetails.put("name", name);
+                userDetails.put("id", userId);
+                userDetails.put("photo", photoDownload_url);
+
+                //storing data in Firestore
+                db.collection("Users").document(userId).set(userDetails)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                dialog_loading.dismiss();
+                                Toasty.success(Register.this, "Successful", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(Register.this, MainActivity.class)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                                finish();
+
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                dialog_loading.dismiss();
+                                Log.e("errorDB", e.getMessage());
+                                Toasty.error(Register.this, "Try again later!", Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+
+            }
+
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Log.e("error hai", exception.getMessage());
+            }
+        });
+    }
+
 
     //Dialog
     private void Dialog_Loading() {
