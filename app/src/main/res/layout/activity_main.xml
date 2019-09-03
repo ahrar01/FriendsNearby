@@ -60,7 +60,6 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/profilePic"
                 android:layout_marginBottom="5dp"
-                android:elevation="10dp"
                 android:paddingLeft="20dp"
                 android:paddingTop="10dp"
                 android:paddingRight="20dp"
@@ -74,7 +73,6 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/profilePic"
                 android:layout_below="@+id/name_text"
-                android:elevation="10dp"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingBottom="10dp"
@@ -102,7 +100,7 @@
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cBookings"
+        android:id="@+id/cHeading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/profileLayout"
@@ -155,7 +153,17 @@
 
 
         </LinearLayout>
+
+
     </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/users_list_view"
+        android:layout_below="@+id/cHeading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 
 

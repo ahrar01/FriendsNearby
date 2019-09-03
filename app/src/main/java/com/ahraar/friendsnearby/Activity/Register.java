@@ -183,7 +183,7 @@ public class Register extends AppCompatActivity {
     }
 
     public void saveData(final String name) {
-        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
+        final FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
         final String userId = currUser.getUid();
         //storing image in storage
         StorageReference strefPresc = FirebaseStorage.getInstance().getReference().child("profile");
@@ -195,7 +195,20 @@ public class Register extends AppCompatActivity {
                 Uri downloadUrl = urlTask.getResult();
                 final String photoDownload_url = String.valueOf(downloadUrl);
                 Map<String, Object> userDetails = new HashMap<>();
+                try {
+                    String email = currUser.getEmail();
+                    String number = currUser.getPhoneNumber();
+                    if (!(email == null)){
+                        userDetails.put("contact", email);
+                    }else {
+                        userDetails.put("contact", number);
+                    }
 
+
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 double latitude = gps.getLatitude();
                 double longitude = gps.getLongitude();
                 userDetails.put("name", name);
