@@ -3,12 +3,17 @@ package com.ahraar.friendsnearby.Activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +22,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ahraar.friendsnearby.Permission;
 import com.ahraar.friendsnearby.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,9 +51,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
         init();
         getCurrentUserData();
     }
+
+
 
     private void init() {
 

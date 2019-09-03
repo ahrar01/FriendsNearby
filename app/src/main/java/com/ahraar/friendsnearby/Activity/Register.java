@@ -2,22 +2,29 @@ package com.ahraar.friendsnearby.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.ahraar.friendsnearby.GPSTracker;
+import com.ahraar.friendsnearby.Permission;
 import com.ahraar.friendsnearby.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -53,10 +60,10 @@ import id.zelory.compressor.Compressor;
 
 public class Register extends AppCompatActivity {
 
+    boolean IMAGE_STATUS = false;
     private CircleImageView profilePic;
     private FloatingActionButton changeProfilePic;
     private MaterialEditText mName;
-    boolean IMAGE_STATUS = false;
     private Uri imageUri, resultUri;
     private InputStream inputStream;
     private Bitmap profilePicture;
@@ -64,16 +71,56 @@ public class Register extends AppCompatActivity {
     private Button button_update;
     private Dialog dialog_loading;
 
-    private FirebaseFirestore db ;
+    private FirebaseFirestore db;
+    private GPSTracker gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        permissions_();
+       // locationCheck();
         dialog_loading = new Dialog(this);
         db = FirebaseFirestore.getInstance();
+        gps = new GPSTracker(Register.this);
         init();
 
+    }
+
+    private boolean locationCheck() {
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception ex) {
+            //
+        }
+
+        if (!gps_enabled && !network_enabled) {
+            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if (gps_enabled)
+                return true;
+            else
+                return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean permissions_() {
+        final int PERMISSION_ALL = 1;
+        String[] Permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_COARSE_LOCATION,};
+        if (!Permission.hasPermissions(getApplicationContext(), Permissions)) {
+            ActivityCompat.requestPermissions(Register.this, Permissions, PERMISSION_ALL);
+            permissions_();
+        } else {
+            return true;
+        }
+        return true;
     }
 
     private void init() {
@@ -126,7 +173,7 @@ public class Register extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String name = mName.getText().toString();
-                if (Validate(name)&&validateProfile()){
+                if (Validate(name) && validateProfile()) {
                     Dialog_Loading();
                     saveData(name);
                 }
@@ -148,8 +195,13 @@ public class Register extends AppCompatActivity {
                 Uri downloadUrl = urlTask.getResult();
                 final String photoDownload_url = String.valueOf(downloadUrl);
                 Map<String, Object> userDetails = new HashMap<>();
+
+                double latitude = gps.getLatitude();
+                double longitude = gps.getLongitude();
                 userDetails.put("name", name);
                 userDetails.put("id", userId);
+                userDetails.put("latitude", latitude);
+                userDetails.put("longitude", longitude);
                 userDetails.put("photo", photoDownload_url);
 
                 //storing data in Firestore
@@ -280,7 +332,6 @@ public class Register extends AppCompatActivity {
         return check;
 
     }
-
 
 
     private boolean validateProfile() {
