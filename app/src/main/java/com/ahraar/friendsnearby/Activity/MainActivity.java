@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -22,14 +24,18 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ahraar.friendsnearby.Adapter.UsersAdapter;
+import com.ahraar.friendsnearby.Model.Users;
 import com.ahraar.friendsnearby.Permission;
 import com.ahraar.friendsnearby.R;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -43,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    private UsersAdapter usersAdapter;
+    private RecyclerView recyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +62,31 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         init();
+        //Current user Data
         getCurrentUserData();
+
+        recyclerView = findViewById(R.id.users_list_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setUpRecyclerView();
     }
 
+    private void setUpRecyclerView() {
+
+        Query query = FirebaseFirestore.getInstance()
+                .collection("Users");
+
+        FirestoreRecyclerOptions<Users> options = new FirestoreRecyclerOptions.Builder<Users>()
+                .setQuery(query, Users.class)
+                .build();
+
+        usersAdapter = new UsersAdapter(options);
+
+
+
+        usersAdapter.notifyDataSetChanged();
+        recyclerView.setAdapter(usersAdapter);
+        usersAdapter.startListening();
+    }
 
 
     private void init() {
@@ -126,5 +157,16 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        usersAdapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        usersAdapter.stopListening();
+    }
 
 }
